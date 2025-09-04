@@ -30,40 +30,34 @@ class PageTimeTracker extends RouteObserver {
       }
 
       _addTime(routePath);
-
-      print(
-          "qqq time for $routePath=${_pageTimes[routePath]!.toDouble() / (1000)}");
     }
   }
 
   @override
   void didPush(Route route, Route? previousRoute) {
-    print("qqq didPush");
     _trackRouteTime(previousRoute);
+    super.didPush(route, previousRoute);
   }
 
   @override
   void didPop(Route route, Route? previousRoute) {
-    print("qqq didPop");
     _trackRouteTime(route);
+    super.didPop(route, previousRoute);
   }
 
   @override
   void didRemove(Route route, Route? previousRoute) {
-    print("qqq didRemove");
     _trackRouteTime(route);
     super.didRemove(route, previousRoute);
   }
 
   @override
   void didChangeTop(Route topRoute, Route? previousTopRoute) {
-    print("qqq didChangeTop");
     _trackRouteTime(previousTopRoute);
   }
 
   @override
   void didReplace({Route? newRoute, Route? oldRoute}) {
-    print("qqq didReplace");
     _trackRouteTime(oldRoute);
   }
 

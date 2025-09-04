@@ -24,7 +24,7 @@ class EventStorage {
 
   Future<void> addEvent(TrackEvent event) async {
     await _queue(callback: () async {
-      final cachedEvents = await readCache();
+      final cachedEvents = await getCachedEvents();
       cachedEvents.add(event);
       final json = cachedEvents.map((e) => e.toJson()).toList();
       await _writeToFile(jsonEncode(json));
@@ -33,7 +33,7 @@ class EventStorage {
 
   Future<void> removeEvents(List<TrackEvent> events) async {
     await _queue(callback: () async {
-      final cache = await readCache();
+      final cache = await getCachedEvents();
       final remaining =
           cache.where((event) => !events.contains(event)).toList();
       final json = remaining.map((e) => e.toJson()).toList();
@@ -41,7 +41,7 @@ class EventStorage {
     });
   }
 
-  Future<List<TrackEvent>> readCache() async {
+  Future<List<TrackEvent>> getCachedEvents() async {
     final file = File(_storagePath);
     final content = await file.readAsString();
     if (content.isEmpty) return [];
