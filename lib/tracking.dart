@@ -9,8 +9,14 @@ class Tracker {
   final int batchSize;
   bool isInitialised = false;
 
-  Tracker({required String serviceBaseUrl, this.batchSize = 5})
-      : _trackingClient = TrackingClient(serviceBaseUrl);
+  Tracker({
+    required String serviceBaseUrl,
+    Map<String, String> clientHeaders = const {},
+    this.batchSize = 5,
+  }) : _trackingClient = TrackingClient(
+          serviceBaseUrl,
+          clientHeaders,
+        );
 
   Future<void> initialize() async {
     await _eventStorage.init();
