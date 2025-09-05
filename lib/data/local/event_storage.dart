@@ -1,24 +1,19 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
 
 class EventStorage {
-  final String _storageName = "tracking_events.json";
-  late final String _storagePath;
+  final _secureStorage = FlutterSecureStorage();
+  final _storageKey = "tracking_events";
   bool mutex = false;
 
   Future<void> init() async {
-    final Directory cacheDir = await getApplicationCacheDirectory();
-    _storagePath = "${cacheDir.path}/$_storageName";
-    final file = File(_storagePath);
-    final exists = await file.exists();
+    final exists = await _secureStorage.containsKey(key: _storageKey);
     if (!exists) {
-      await file.create(recursive: true);
-      await _writeToFile(jsonEncode([]));
+      await _writeToFile([]);
     }
   }
 
@@ -27,7 +22,7 @@ class EventStorage {
       final cachedEvents = await getCachedEvents();
       cachedEvents.add(event);
       final json = cachedEvents.map((e) => e.toJson()).toList();
-      await _writeToFile(jsonEncode(json));
+      await _writeToFile(json);
     });
   }
 
@@ -37,28 +32,23 @@ class EventStorage {
       final remaining =
           cache.where((event) => !events.contains(event)).toList();
       final json = remaining.map((e) => e.toJson()).toList();
-      await _writeToFile(jsonEncode(json));
+      await _writeToFile(json);
     });
   }
 
   Future<List<TrackEvent>> getCachedEvents() async {
-    final file = File(_storagePath);
-    final content = await file.readAsString();
+    final content = await _secureStorage.read(key: _storageKey) ?? "";
     if (content.isEmpty) return [];
     final json = jsonDecode(content);
     if (json is List) {
-      if (json.isEmpty) return [];
       return json.map((e) => TrackEvent.fromJson(e)).toList();
     }
-    return [];
+    throw Exception("Malformed data");
   }
 
-  Future<void> _writeToFile(String content) async {
-    final file = File(_storagePath);
-    var sink = file.openWrite();
-    sink.write(content);
-    await sink.flush();
-    await sink.close();
+  Future<void> _writeToFile(Object content) async {
+    final encodedJson = jsonEncode(content);
+    await _secureStorage.write(key: _storageKey, value: encodedJson);
   }
 
   Future<void> _queue({required AsyncCallback callback}) async {
