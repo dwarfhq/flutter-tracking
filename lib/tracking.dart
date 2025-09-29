@@ -1,10 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:tracking/data/local/event_storage.dart';
 import 'package:tracking/data/remote/tracking_client.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
+import 'package:tracking/domain/route_utils.dart';
+
+import 'domain/route_time_tracker/page_time_tracker.dart';
 
 class Tracker {
   final _eventStorage = EventStorage();
+  final PageTimeTracker _pageTimeTracker;
   final TrackingClient _trackingClient;
   final int batchSize;
   final bool debug;
@@ -15,10 +20,8 @@ class Tracker {
     Map<String, String> clientHeaders = const {},
     this.debug = false,
     this.batchSize = 5,
-  }) : _trackingClient = TrackingClient(
-          serviceBaseUrl,
-          clientHeaders,
-        );
+  })  : _trackingClient = TrackingClient(serviceBaseUrl, clientHeaders),
+        _pageTimeTracker = PageTimeTracker();
 
   Future<void> initialize() async {
     try {
@@ -42,6 +45,19 @@ class Tracker {
     } catch (e, st) {
       _printError(e, st);
     }
+  }
+
+  void trackScreen(String route) {
+    final event = _pageTimeTracker.switchRoute(route);
+    if (event != null) {
+      track(TrackEvent.fromScreen(event));
+      _print("screen ${event.path}, ${event.time}ms -> swithRoute=$route");
+    }
+  }
+
+  void trackCurrentScreen(BuildContext context) {
+    final matchedLocation = context.currentLocation;
+    trackScreen(matchedLocation);
   }
 
   Future<void> sendAll() async {

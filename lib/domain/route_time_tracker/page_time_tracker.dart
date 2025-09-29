@@ -1,64 +1,23 @@
-import 'package:flutter/widgets.dart';
+import 'package:tracking/domain/route_time_tracker/page_track.dart';
 
-class PageTimeTracker extends RouteObserver {
+class PageTimeTracker {
   var _timer = DateTime.now().millisecondsSinceEpoch;
-  final _pageTimes = <String, int>{};
+  final userJourney = <PageTrack>[];
+  String _currentPath = "open_app";
 
-  void _addTime(String path) {
+  PageTrack _addTime() {
     final time = _timeNowMs - _timer;
     _timer = _timeNowMs;
-    if (_pageTimes.containsKey(path)) {
-      final cache = _pageTimes[path]!;
-      _pageTimes[path] = cache + time;
-    } else {
-      _pageTimes[path] = time;
-    }
+    final trackEvent = PageTrack(_currentPath, time);
+    userJourney.add(trackEvent);
+    return trackEvent;
   }
 
-  void _trackRouteTime(Route? route) {
-    final routeName = route?.settings.name;
-    final routeArgs = route?.settings.arguments;
-    if (routeName != null) {
-      String routePath = routeName;
-      if (routeArgs != null) {
-        if (routeArgs is Map<String, String>) {
-          for (final key in routeArgs.keys) {
-            routePath =
-                routePath.replaceAll(":$key", routeArgs[key].toString());
-          }
-        }
-      }
-
-      _addTime(routePath);
-    }
-  }
-
-  @override
-  void didPush(Route route, Route? previousRoute) {
-    _trackRouteTime(previousRoute);
-    super.didPush(route, previousRoute);
-  }
-
-  @override
-  void didPop(Route route, Route? previousRoute) {
-    _trackRouteTime(route);
-    super.didPop(route, previousRoute);
-  }
-
-  @override
-  void didRemove(Route route, Route? previousRoute) {
-    _trackRouteTime(route);
-    super.didRemove(route, previousRoute);
-  }
-
-  @override
-  void didChangeTop(Route topRoute, Route? previousTopRoute) {
-    _trackRouteTime(previousTopRoute);
-  }
-
-  @override
-  void didReplace({Route? newRoute, Route? oldRoute}) {
-    _trackRouteTime(oldRoute);
+  PageTrack? switchRoute(String path) {
+    if (path == _currentPath) return null;
+    final pageTrack = _addTime();
+    _currentPath = path;
+    return pageTrack;
   }
 
   int get _timeNowMs => DateTime.now().millisecondsSinceEpoch;

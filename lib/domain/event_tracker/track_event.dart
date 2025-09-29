@@ -1,9 +1,10 @@
 import 'package:tracking/data/utils.dart';
+import 'package:tracking/domain/route_time_tracker/page_track.dart';
 
 class TrackEvent {
   final String eventId;
   final int timeStamp;
-  final Map<String, dynamic> parameters;
+  final Json parameters;
 
   TrackEvent({
     required this.timeStamp,
@@ -25,6 +26,16 @@ class TrackEvent {
       eventId: json["event_id"],
       parameters: json["params"],
     );
+  }
+
+  static TrackEvent fromScreen(PageTrack event) {
+    return TrackEvent(timeStamp: DateTime.now().millisecondsSinceEpoch, eventId: "screen", parameters: event.toJson());
+  }
+
+  @override
+  String toString() {
+    return "TrackEvent: $eventId, $parameters";
+    return super.toString();
   }
 
   @override
