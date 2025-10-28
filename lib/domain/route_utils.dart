@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 extension RouteUtils on BuildContext {
   String get currentLocation {
     try {
-      print("qqq widget is ${widget.runtimeType}");
       if (widget is Router<dynamic>) {
         final router = widget as Router<dynamic>;
         final routeMatchList = router.routerDelegate

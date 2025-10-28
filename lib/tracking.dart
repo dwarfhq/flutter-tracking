@@ -20,8 +20,7 @@ class Tracker {
     Map<String, String> clientHeaders = const {},
     this.debug = false,
     this.batchSize = 5,
-  })
-      : _trackingClient = TrackingClient(serviceBaseUrl, clientHeaders),
+  })  : _trackingClient = TrackingClient(serviceBaseUrl, clientHeaders),
         _pageTimeTracker = PageTimeTracker();
 
   Future<void> initialize() async {
@@ -62,7 +61,6 @@ class Tracker {
   }
 
   Future<void> sendAll() async {
-    return;
     if (!_isInitialised) throw TrackingNotInitialisedException();
     try {
       final cachedEvents = await _eventStorage.getCachedEvents();
