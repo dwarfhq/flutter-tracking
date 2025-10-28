@@ -20,7 +20,8 @@ class Tracker {
     Map<String, String> clientHeaders = const {},
     this.debug = false,
     this.batchSize = 5,
-  })  : _trackingClient = TrackingClient(serviceBaseUrl, clientHeaders),
+  })
+      : _trackingClient = TrackingClient(serviceBaseUrl, clientHeaders),
         _pageTimeTracker = PageTimeTracker();
 
   Future<void> initialize() async {
@@ -35,8 +36,8 @@ class Tracker {
 
   Future<void> track(TrackEvent event) async {
     if (!_isInitialised) throw TrackingNotInitialisedException();
+    _print("track($event)");
     try {
-      _print("track($event)");
       await _eventStorage.addEvent(event);
       final cachedEvents = await _eventStorage.getCachedEvents();
       if (cachedEvents.length >= batchSize) {
@@ -49,9 +50,9 @@ class Tracker {
 
   void trackScreen(String route) {
     final event = _pageTimeTracker.switchRoute(route);
+    _print("screen ${event?.path}, ${event?.time}ms -> swithRoute=$route");
     if (event != null) {
       track(TrackEvent.fromScreen(event));
-      _print("screen ${event.path}, ${event.time}ms -> swithRoute=$route");
     }
   }
 
@@ -61,6 +62,7 @@ class Tracker {
   }
 
   Future<void> sendAll() async {
+    return;
     if (!_isInitialised) throw TrackingNotInitialisedException();
     try {
       final cachedEvents = await _eventStorage.getCachedEvents();

@@ -2,14 +2,12 @@ import 'package:tracking/domain/route_time_tracker/page_track.dart';
 
 class PageTimeTracker {
   var _timer = DateTime.now().millisecondsSinceEpoch;
-  final userJourney = <PageTrack>[];
   String _currentPath = "open_app";
 
   PageTrack _addTime() {
     final time = _timeNowMs - _timer;
     _timer = _timeNowMs;
     final trackEvent = PageTrack(_currentPath, time);
-    userJourney.add(trackEvent);
     return trackEvent;
   }
 
