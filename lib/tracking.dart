@@ -15,6 +15,8 @@ class Tracker {
   final bool debug;
   bool _isInitialised = false;
 
+  int get currentTimeOnRoute => _pageTimeTracker.currentTimeOnRoute;
+
   Tracker({
     required String serviceBaseUrl,
     Map<String, String> clientHeaders = const {},

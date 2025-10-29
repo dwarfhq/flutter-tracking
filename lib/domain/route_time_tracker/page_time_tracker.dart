@@ -4,6 +4,8 @@ class PageTimeTracker {
   var _timer = DateTime.now().millisecondsSinceEpoch;
   String _currentPath = "open_app";
 
+  int get currentTimeOnRoute => _timeNowMs - _timer;
+
   PageTrack _addTime() {
     final time = _timeNowMs - _timer;
     _timer = _timeNowMs;
