@@ -8,7 +8,7 @@ import 'package:tracking/domain/event_tracker/track_event.dart';
 class EventStorage {
   final _secureStorage = FlutterSecureStorage();
   final _storageKey = "tracking_events";
-  bool mutex = false;
+  bool _mutex = false;
 
   Future<void> init() async {
     final exists = await _secureStorage.containsKey(key: _storageKey);
@@ -53,13 +53,13 @@ class EventStorage {
 
   Future<void> _queue({required AsyncCallback callback}) async {
     int retry = 0;
-    while (mutex) {
+    while (_mutex) {
       if (retry > 50) throw TrackingTimeoutException();
       await Future<void>.delayed(Duration(milliseconds: 100));
       retry++;
     }
-    mutex = true;
+    _mutex = true;
     await callback();
-    mutex = false;
+    _mutex = false;
   }
 }

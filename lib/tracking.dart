@@ -5,6 +5,7 @@ import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
 import 'package:tracking/domain/route_utils.dart';
 
+import 'data/utils.dart';
 import 'domain/route_time_tracker/page_time_tracker.dart';
 
 class Tracker {
@@ -13,16 +14,24 @@ class Tracker {
   final TrackingClient _trackingClient;
   final int batchSize;
   final bool debug;
-  bool _isInitialised = false;
+  var _isInitialised = false;
+  Json _extraData = {};
 
   int get currentTimeOnRoute => _pageTimeTracker.currentTimeOnRoute;
 
   Tracker({
     required String serviceBaseUrl,
-    Map<String, String> clientHeaders = const {},
+    Map<String, String> clientHeaders = const <String, String>{},
     this.debug = false,
     this.batchSize = 5,
-  })  : _trackingClient = TrackingClient(serviceBaseUrl, clientHeaders),
+    Json extraData = const <String, dynamic>{},
+    customEventsKey = "events",
+  })  : _trackingClient = TrackingClient(
+          serviceBaseUrl,
+          customEventsKey: customEventsKey,
+          headers: clientHeaders,
+        ),
+        _extraData = extraData,
         _pageTimeTracker = PageTimeTracker();
 
   Future<void> initialize() async {
@@ -51,7 +60,7 @@ class Tracker {
 
   void trackScreen(String route) {
     final event = _pageTimeTracker.switchRoute(route);
-    _print("screen ${event?.path}, ${event?.time}ms -> swithRoute=$route");
+    _print("screen ${event?.path} -> $route, time=${event?.time}ms");
     if (event != null) {
       track(TrackEvent.fromScreen(event));
     }
@@ -67,12 +76,17 @@ class Tracker {
     try {
       final cachedEvents = await _eventStorage.getCachedEvents();
       _print("sendAll(), len=${cachedEvents.length}");
-      await _trackingClient.sendMultipleEvents(cachedEvents);
+      await _trackingClient.sendMultipleEvents(cachedEvents,
+          extraData: _extraData);
       await _eventStorage.removeEvents(cachedEvents);
       _print("sendAll() success");
     } catch (e, st) {
       _printError(e, st);
     }
+  }
+
+  void updateExtraData(Json newExtra) {
+    _extraData = newExtra;
   }
 
   void _print(String message) {
