@@ -4,6 +4,7 @@ import 'package:tracking/data/remote/tracking_client.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
 import 'package:tracking/domain/route_utils.dart';
+import 'package:uuid/uuid.dart';
 
 import 'data/utils.dart';
 import 'domain/route_time_tracker/page_time_tracker.dart';
@@ -44,11 +45,12 @@ class Tracker {
     }
   }
 
-  Future<void> track(TrackEvent event) async {
+  Future<void> track(Json event) async {
     if (!_isInitialised) throw TrackingNotInitialisedException();
     _print("track($event)");
     try {
-      await _eventStorage.addEvent(event);
+      await _eventStorage
+          .addEvent(TrackEvent(data: event, cacheId: Uuid().v4()));
       final cachedEvents = await _eventStorage.getCachedEvents();
       if (cachedEvents.length >= batchSize) {
         await sendAll();
@@ -62,7 +64,7 @@ class Tracker {
     final event = _pageTimeTracker.switchRoute(route);
     _print("screen ${event?.path} -> $route, time=${event?.time}ms");
     if (event != null) {
-      track(TrackEvent.fromScreen(event));
+      track(TrackEvent.fromScreen(event).toJson());
     }
   }
 
