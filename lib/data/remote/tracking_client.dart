@@ -1,9 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'package:tracking/domain/event_tracker/track_event.dart';
-
-import '../utils.dart';
 
 class TrackingClient {
   TrackingClient(
@@ -20,12 +19,12 @@ class TrackingClient {
   final String customEventsKey;
 
   Future<void> sendMultipleEvents(List<TrackEvent> events,
-      {Json extraData = const {}}) async {
+      {Map<String, String> extraData = const {}}) async {
     await http.post(
       serviceUrl,
       body: {
         ...extraData,
-        customEventsKey: events.map((e) => e.toJson()).toList(),
+        customEventsKey: jsonEncode(events.map((e) => e.toJson()).toList()),
       },
     );
   }

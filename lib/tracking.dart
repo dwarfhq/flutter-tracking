@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:tracking/data/local/event_storage.dart';
 import 'package:tracking/data/remote/tracking_client.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
@@ -16,7 +16,7 @@ class Tracker {
   final int batchSize;
   final bool debug;
   var _isInitialised = false;
-  Json _extraData = {};
+  Map<String, String> _extraData = {};
 
   int get currentTimeOnRoute => _pageTimeTracker.currentTimeOnRoute;
 
@@ -25,7 +25,7 @@ class Tracker {
     Map<String, String> clientHeaders = const <String, String>{},
     this.debug = false,
     this.batchSize = 5,
-    Json extraData = const <String, dynamic>{},
+    Map<String, String> extraData = const <String, String>{},
     customEventsKey = "events",
   })  : _trackingClient = TrackingClient(
           serviceUrl,
@@ -87,7 +87,7 @@ class Tracker {
     }
   }
 
-  void updateExtraData(Json newExtra) {
+  void updateExtraData(Map<String, String> newExtra) {
     _extraData = newExtra;
   }
 
