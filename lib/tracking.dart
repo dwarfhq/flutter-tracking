@@ -21,14 +21,14 @@ class Tracker {
   int get currentTimeOnRoute => _pageTimeTracker.currentTimeOnRoute;
 
   Tracker({
-    required String serviceBaseUrl,
+    required String serviceUrl,
     Map<String, String> clientHeaders = const <String, String>{},
     this.debug = false,
     this.batchSize = 5,
     Json extraData = const <String, dynamic>{},
     customEventsKey = "events",
   })  : _trackingClient = TrackingClient(
-          serviceBaseUrl,
+          serviceUrl,
           customEventsKey: customEventsKey,
           headers: clientHeaders,
         ),
