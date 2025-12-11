@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:tracking/domain/event_tracker/track_event.dart';
 
+import '../utils.dart';
+
 class TrackingClient {
   TrackingClient(
     String serviceUrl, {
@@ -19,13 +21,14 @@ class TrackingClient {
   final String customEventsKey;
 
   Future<void> sendMultipleEvents(List<TrackEvent> events,
-      {Map<String, String> extraData = const {}}) async {
+      {Json extraData = const {}}) async {
+    final body = {
+      ...extraData,
+      customEventsKey: events.map((e) => e.toJson()).toList(),
+    };
     await http.post(
       serviceUrl,
-      body: {
-        ...extraData,
-        customEventsKey: jsonEncode(events.map((e) => e.toJson()).toList()),
-      },
+      body: jsonEncode(body),
     );
   }
 }

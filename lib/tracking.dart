@@ -16,7 +16,7 @@ class Tracker {
   final int batchSize;
   final bool debug;
   var _isInitialised = false;
-  Map<String, String> _extraData = {};
+  Json _extraData = {};
 
   int get currentTimeOnRoute => _pageTimeTracker.currentTimeOnRoute;
 
@@ -25,7 +25,7 @@ class Tracker {
     Map<String, String> clientHeaders = const <String, String>{},
     this.debug = false,
     this.batchSize = 5,
-    Map<String, String> extraData = const <String, String>{},
+    Json extraData = const <String, dynamic>{},
     customEventsKey = "events",
   })  : _trackingClient = TrackingClient(
           serviceUrl,
@@ -87,7 +87,7 @@ class Tracker {
     }
   }
 
-  void updateExtraData(Map<String, String> newExtra) {
+  void updateExtraData(Json newExtra) {
     _extraData = newExtra;
   }
 
