@@ -9,16 +9,19 @@ import '../utils.dart';
 class TrackingClient {
   TrackingClient(
     String serviceUrl, {
-    this.headers = const <String, String>{},
     this.customEventsKey = "events",
-  }) : serviceUrl = Uri.parse(serviceUrl);
+  })  : serviceUrl = Uri.parse(serviceUrl);
 
   final Uri serviceUrl;
   final client = HttpClient();
-  final Map<String, String> headers;
+  final Map<String, String> _headers = {};
 
   /// custom key for list of events when sending batch
   final String customEventsKey;
+
+  void addHeader(String key, String value) {
+    _headers[key] = value;
+  }
 
   Future<http.Response> sendMultipleEvents(List<TrackEvent> events,
       {Json extraData = const {}}) async {
@@ -28,6 +31,6 @@ class TrackingClient {
     };
     return http.post(serviceUrl,
         body: jsonEncode(body),
-        headers: {"content-type": "application/json", ...headers});
+        headers: {"content-type": "application/json", ..._headers});
   }
 }

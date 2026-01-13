@@ -24,13 +24,11 @@ class Tracker {
     required String serviceUrl,
     this.debug = false,
     this.batchSize = 5,
-    Map<String, String> clientHeaders = const <String, String>{},
     Json extraData = const <String, dynamic>{},
     customEventsKey = "events",
   })  : _trackingClient = TrackingClient(
           serviceUrl,
           customEventsKey: customEventsKey,
-          headers: clientHeaders,
         ),
         _extraData = extraData,
         _pageTimeTracker = PageTimeTracker();
@@ -96,7 +94,7 @@ class Tracker {
   }
 
   void addHeader(String key, String value) {
-    _trackingClient.headers[key] = value;
+    _trackingClient.addHeader(key, value);
   }
 
   void _print(String message) {
