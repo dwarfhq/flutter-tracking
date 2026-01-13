@@ -20,15 +20,14 @@ class TrackingClient {
   /// custom key for list of events when sending batch
   final String customEventsKey;
 
-  Future<void> sendMultipleEvents(List<TrackEvent> events,
+  Future<http.Response> sendMultipleEvents(List<TrackEvent> events,
       {Json extraData = const {}}) async {
     final body = {
       ...extraData,
-      customEventsKey: events.map((e) => e.toJson()).toList(),
+      customEventsKey: events.map((e) => e.data).toList(),
     };
-    await http.post(
-      serviceUrl,
-      body: jsonEncode(body),
-    );
+    return http.post(serviceUrl,
+        body: jsonEncode(body),
+        headers: {"content-type": "application/json", ...headers});
   }
 }

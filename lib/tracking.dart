@@ -22,9 +22,9 @@ class Tracker {
 
   Tracker({
     required String serviceUrl,
-    Map<String, String> clientHeaders = const <String, String>{},
     this.debug = false,
     this.batchSize = 5,
+    Map<String, String> clientHeaders = const <String, String>{},
     Json extraData = const <String, dynamic>{},
     customEventsKey = "events",
   })  : _trackingClient = TrackingClient(
@@ -78,8 +78,12 @@ class Tracker {
     try {
       final cachedEvents = await _eventStorage.getCachedEvents();
       _print("sendAll(), len=${cachedEvents.length}");
-      await _trackingClient.sendMultipleEvents(cachedEvents,
+      final response = await _trackingClient.sendMultipleEvents(cachedEvents,
           extraData: _extraData);
+      if (!response.statusCode.toString().startsWith("2")) {
+        throw Exception("Tracking error: ${response.body}");
+      }
+      _print("response=${response.body}");
       await _eventStorage.removeEvents(cachedEvents);
       _print("sendAll() success");
     } catch (e, st) {
@@ -89,6 +93,10 @@ class Tracker {
 
   void updateExtraData(Json newExtra) {
     _extraData = newExtra;
+  }
+
+  void addHeader(String key, String value) {
+    _trackingClient.headers[key] = value;
   }
 
   void _print(String message) {
