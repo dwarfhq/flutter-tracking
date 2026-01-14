@@ -90,7 +90,7 @@ class Tracker {
   }
 
   void updateExtraData(Json newExtra) {
-    _extraData = newExtra;
+    _extraData = {..._extraData, ...newExtra};
   }
 
   void addHeader(String key, String value) {
