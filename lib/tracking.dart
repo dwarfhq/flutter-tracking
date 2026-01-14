@@ -58,17 +58,17 @@ class Tracker {
     }
   }
 
-  void trackScreen(String route) {
-    final event = _pageTimeTracker.switchRoute(route);
+  void trackScreen(String route, {Json params = const {}}) {
+    final event = _pageTimeTracker.switchRoute(route, params);
     _print("screen ${event?.path} -> $route, time=${event?.time}ms");
     if (event != null) {
       track(TrackEvent.fromScreen(event).toJson());
     }
   }
 
-  void trackCurrentScreen(BuildContext context) {
+  void trackCurrentScreen(BuildContext context, {Json params = const {}}) {
     final matchedLocation = context.currentLocation;
-    trackScreen(matchedLocation);
+    trackScreen(matchedLocation, params: params);
   }
 
   Future<void> sendAll() async {

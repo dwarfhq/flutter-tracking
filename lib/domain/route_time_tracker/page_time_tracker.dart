@@ -1,3 +1,4 @@
+import 'package:tracking/data/utils.dart';
 import 'package:tracking/domain/route_time_tracker/page_track.dart';
 
 class PageTimeTracker {
@@ -6,18 +7,13 @@ class PageTimeTracker {
 
   int get currentTimeOnRoute => _timeNowMs - _timer;
 
-  PageTrack _addTime() {
+  PageTrack? switchRoute(String path, Json params) {
+    if (path == _currentPath) return null;
     final time = _timeNowMs - _timer;
     _timer = _timeNowMs;
-    final trackEvent = PageTrack(_currentPath, time);
-    return trackEvent;
-  }
-
-  PageTrack? switchRoute(String path) {
-    if (path == _currentPath) return null;
-    final pageTrack = _addTime();
+    final trackEvent = PageTrack(_currentPath, time, params);
     _currentPath = path;
-    return pageTrack;
+    return trackEvent;
   }
 
   int get _timeNowMs => DateTime.now().millisecondsSinceEpoch;
