@@ -47,8 +47,7 @@ class Tracker {
     if (!_isInitialised) throw TrackingNotInitialisedException();
     _print("track($event)");
     try {
-      await _eventStorage
-          .addEvent(TrackEvent(data: event, cacheId: Uuid().v4()));
+      await _eventStorage.addEvent(TrackEvent(data: event, cacheId: Uuid().v4()));
       final cachedEvents = await _eventStorage.getCachedEvents();
       if (cachedEvents.length >= batchSize) {
         await sendAll();
@@ -59,16 +58,16 @@ class Tracker {
   }
 
   void trackScreen(String route, {Json params = const {}}) {
-    final event = _pageTimeTracker.switchRoute(route, params);
+    final event = _pageTimeTracker.switchRoute(route, {
+      "source": "app",
+      "category": "screen",
+      "event": "screen_view",
+      "created_at": DateTime.now().toIso8601StringWithTz(),
+    });
     _print("screen ${event?.path} -> $route, time=${event?.time}ms");
     if (event != null) {
       track(TrackEvent.fromScreen(event).toJson());
     }
-  }
-
-  void trackCurrentScreen(BuildContext context, {Json params = const {}}) {
-    final matchedLocation = context.currentLocation;
-    trackScreen(matchedLocation, params: params);
   }
 
   Future<void> sendAll() async {
@@ -76,8 +75,7 @@ class Tracker {
     try {
       final cachedEvents = await _eventStorage.getCachedEvents();
       _print("sendAll(), len=${cachedEvents.length}");
-      final response = await _trackingClient.sendMultipleEvents(cachedEvents,
-          extraData: _extraData);
+      final response = await _trackingClient.sendMultipleEvents(cachedEvents, extraData: _extraData);
       if (!response.statusCode.toString().startsWith("2")) {
         throw Exception("Tracking error: ${response.body}");
       }
