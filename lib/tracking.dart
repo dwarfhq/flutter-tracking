@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:tracking/data/local/event_storage.dart';
 import 'package:tracking/data/remote/tracking_client.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
-import 'package:tracking/domain/route_utils.dart';
 import 'package:uuid/uuid.dart';
 
 import 'data/utils.dart';
