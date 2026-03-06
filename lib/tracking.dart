@@ -8,11 +8,12 @@ import 'data/utils.dart';
 import 'domain/route_time_tracker/page_time_tracker.dart';
 
 class Tracker {
-  final _eventStorage = EventStorage();
+  final EventStorage _eventStorage = EventStorage();
   final PageTimeTracker _pageTimeTracker;
   final TrackingClient _trackingClient;
   final int batchSize;
   final bool debug;
+  ErrorCallback? _onError;
   var _isInitialised = false;
   Json _extraData = {};
 
@@ -52,6 +53,7 @@ class Tracker {
       }
     } catch (e, st) {
       _printError(e, st);
+      _onError?.call(e, st);
     }
   }
 
@@ -73,8 +75,10 @@ class Tracker {
     try {
       final cachedEvents = await _eventStorage.getCachedEvents();
       _print("sendAll(), len=${cachedEvents.length}");
-      final response = await _trackingClient.sendMultipleEvents(cachedEvents, extraData: _extraData);
+      final response =
+          await _trackingClient.sendMultipleEvents(cachedEvents, extraData: _extraData);
       if (!response.statusCode.toString().startsWith("2")) {
+        print("qqq Tracking=${cachedEvents.map((e) => e.toJson()).toList()}");
         throw Exception("Tracking error: ${response.body}");
       }
       _print("response=${response.body}");
@@ -82,6 +86,7 @@ class Tracker {
       _print("sendAll() success");
     } catch (e, st) {
       _printError(e, st);
+      _onError?.call(e, st);
     }
   }
 
@@ -93,11 +98,20 @@ class Tracker {
     _trackingClient.addHeader(key, value);
   }
 
+  void clearAllEvents() async {
+    await _eventStorage.removeAllEvents();
+  }
+
   void _print(String message) {
     if (debug) print("Tracker -- $message");
   }
 
   void _printError(Object e, StackTrace st) {
     _print("ERROR! $e: $st");
+  }
+
+  set onError(ErrorCallback value) {
+    _onError = value;
+    _eventStorage.onError = value;
   }
 }

@@ -16,7 +16,7 @@ class TrackEvent {
 
   static TrackEvent fromJson(Json json) {
     return TrackEvent(
-      cacheId: json["cache_id"],
+      cacheId: json["cache_id"] ?? "",
       data: json,
     );
   }

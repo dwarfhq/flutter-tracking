@@ -5,10 +5,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
 
+import '../utils.dart';
+
 class EventStorage {
   final _secureStorage = FlutterSecureStorage();
   final _storageKey = "tracking_events";
+  ErrorCallback? _onError;
   bool _mutex = false;
+
+  EventStorage();
 
   Future<void> init() async {
     final exists = await _secureStorage.containsKey(key: _storageKey);
@@ -29,11 +34,14 @@ class EventStorage {
   Future<void> removeEvents(List<TrackEvent> events) async {
     await _queue(callback: () async {
       final cache = await getCachedEvents();
-      final remaining =
-          cache.where((event) => !events.contains(event)).toList();
+      final remaining = cache.where((event) => !events.contains(event)).toList();
       final json = remaining.map((e) => e.toJson()).toList();
       await _writeToFile(json);
     });
+  }
+
+  Future<void> removeAllEvents() async {
+    await _writeToFile([]);
   }
 
   Future<List<TrackEvent>> getCachedEvents() async {
@@ -59,7 +67,16 @@ class EventStorage {
       retry++;
     }
     _mutex = true;
-    await callback();
-    _mutex = false;
+    try {
+      await callback();
+    } catch (e, st) {
+      _onError?.call(e, st);
+    } finally {
+      _mutex = false;
+    }
+  }
+
+  set onError(ErrorCallback onError) {
+    _onError = onError;
   }
 }

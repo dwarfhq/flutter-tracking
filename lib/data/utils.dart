@@ -6,13 +6,11 @@ extension DateTimeExtension on DateTime {
     final timeZoneOffset = this.timeZoneOffset;
     final sign = timeZoneOffset.isNegative ? '-' : '+';
     final hours = timeZoneOffset.inHours.abs().toString().padLeft(2, '0');
-    final minutes = timeZoneOffset.inMinutes
-        .abs()
-        .remainder(60)
-        .toString()
-        .padLeft(2, '0');
+    final minutes = timeZoneOffset.inMinutes.abs().remainder(60).toString().padLeft(2, '0');
     final offsetString = '$sign$hours:$minutes';
     final formattedDate = toIso8601String().split('.').first;
     return '$formattedDate$offsetString';
   }
 }
+
+typedef ErrorCallback = void Function(Object err, StackTrace st);
