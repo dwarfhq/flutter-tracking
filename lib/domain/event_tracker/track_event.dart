@@ -21,8 +21,8 @@ class TrackEvent {
     );
   }
 
-  static TrackEvent fromScreen(PageTrack event) {
-    return TrackEvent(cacheId: "screen", data: event.toJson());
+  static TrackEvent fromScreen(PageTrack event, String cacheId) {
+    return TrackEvent(cacheId: cacheId, data: event.toJson());
   }
 
   @override
