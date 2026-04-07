@@ -1,12 +1,13 @@
-import 'package:crypto/crypto.dart';
 import 'package:tracking/data/local/event_storage.dart';
 import 'package:tracking/data/remote/tracking_client.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
 import 'data/utils.dart';
 import 'domain/route_time_tracker/page_time_tracker.dart';
+import 'package:collection/collection.dart';
 
 class Tracker {
+  final _mapEq = DeepCollectionEquality();
   final EventStorage _eventStorage = EventStorage();
   final PageTimeTracker _pageTimeTracker;
   final TrackingClient _trackingClient;
@@ -44,9 +45,8 @@ class Tracker {
   Future<void> track(Json event) async {
     if (!_isInitialised) throw TrackingNotInitialisedException();
     try {
-      final eventUTF8 = event.toString().codeUnits;
-      final shaConvert = sha256.convert(eventUTF8);
-      final trackEvent = TrackEvent(data: event, cacheId: shaConvert.toString());
+      final cacheId = _mapEq.hash(event).toString();
+      final trackEvent = TrackEvent(data: event, cacheId: cacheId);
       _print("track(${trackEvent.toJson()})");
       await _eventStorage.addEvent(trackEvent);
       final cachedEvents = await _eventStorage.getCachedEvents();
@@ -68,9 +68,8 @@ class Tracker {
     });
     _print("screen ${event?.path} -> $route, time=${event?.time}ms");
     if (event != null) {
-      final eventUTF8 = event.toJson().toString().codeUnits;
-      final shaConvert = sha256.convert(eventUTF8);
-      track(TrackEvent(data: event.toJson(), cacheId: shaConvert.toString()).toJson());
+      final cacheId = _mapEq.hash(event).toString();
+      track(TrackEvent(data: event.toJson(), cacheId: cacheId).toJson());
     }
   }
 
