@@ -1,12 +1,8 @@
-import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
 import 'package:tracking/data/local/event_storage.dart';
 import 'package:tracking/data/remote/tracking_client.dart';
 import 'package:tracking/data/tracking_exceptions.dart';
 import 'package:tracking/domain/event_tracker/track_event.dart';
-import 'package:uuid/uuid.dart';
-
 import 'data/utils.dart';
 import 'domain/route_time_tracker/page_time_tracker.dart';
 
@@ -47,13 +43,12 @@ class Tracker {
 
   Future<void> track(Json event) async {
     if (!_isInitialised) throw TrackingNotInitialisedException();
-    _print("track($event)");
     try {
       final eventUTF8 = event.toString().codeUnits;
       final shaConvert = sha256.convert(eventUTF8);
-
-      await _eventStorage
-          .addEvent(TrackEvent(data: event, cacheId: shaConvert.toString()));
+      final trackEvent = TrackEvent(data: event, cacheId: shaConvert.toString());
+      _print("track(${trackEvent.toJson()})");
+      await _eventStorage.addEvent(trackEvent);
       final cachedEvents = await _eventStorage.getCachedEvents();
       if (cachedEvents.length >= batchSize) {
         await sendAll();
@@ -75,7 +70,7 @@ class Tracker {
     if (event != null) {
       final eventUTF8 = event.toJson().toString().codeUnits;
       final shaConvert = sha256.convert(eventUTF8);
-      track(TrackEvent.fromScreen(event, shaConvert.toString()).toJson());
+      track(TrackEvent(data: event.toJson(), cacheId: shaConvert.toString()).toJson());
     }
   }
 
@@ -84,14 +79,16 @@ class Tracker {
     try {
       final cachedEvents = await _eventStorage.getCachedEvents();
       _print("sendAll(), len=${cachedEvents.length}");
-      final response = await _trackingClient.sendMultipleEvents(cachedEvents,
-          extraData: _extraData);
+      final response = await _trackingClient.sendMultipleEvents(
+        cachedEvents.values.toList(),
+        extraData: _extraData,
+      );
       if (!response.statusCode.toString().startsWith("2")) {
-        print("qqq Tracking=${cachedEvents.map((e) => e.toJson()).toList()}");
+        print("qqq Tracking=$cachedEvents");
         throw Exception("Tracking error: ${response.body}");
       }
       _print("response=${response.body}");
-      await _eventStorage.removeEvents(cachedEvents);
+      await _eventStorage.removeEvents(cachedEvents.values.toList());
       _print("sendAll() success");
     } catch (e, st) {
       _printError(e, st);

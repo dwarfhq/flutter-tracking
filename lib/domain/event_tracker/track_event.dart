@@ -1,7 +1,6 @@
 import 'package:tracking/data/utils.dart';
-import 'package:tracking/domain/route_time_tracker/page_track.dart';
 
-class TrackEvent {
+class TrackEvent  {
   final String cacheId;
   final Json data;
 
@@ -19,10 +18,6 @@ class TrackEvent {
       cacheId: json["cache_id"] ?? "",
       data: json,
     );
-  }
-
-  static TrackEvent fromScreen(PageTrack event, String cacheId) {
-    return TrackEvent(cacheId: cacheId, data: event.toJson());
   }
 
   @override

@@ -25,18 +25,19 @@ class EventStorage {
   Future<void> addEvent(TrackEvent event) async {
     await _queue(callback: () async {
       final cachedEvents = await getCachedEvents();
-      cachedEvents.add(event);
-      final json = cachedEvents.map((e) => e.toJson()).toList();
-      await _writeToFile(json);
+      cachedEvents[event.cacheId] = event;
+      await _writeToFile(cachedEvents.values.toList());
     });
   }
 
   Future<void> removeEvents(List<TrackEvent> events) async {
     await _queue(callback: () async {
       final cache = await getCachedEvents();
-      final remaining = cache.where((event) => !events.contains(event)).toList();
-      final json = remaining.map((e) => e.toJson()).toList();
-      await _writeToFile(json);
+      for (final event in events) {
+        cache.remove(event.cacheId);
+      }
+      final entries = cache.map((key, value) => MapEntry(key, value.toJson()));
+      await _writeToFile(entries.values.toList());
     });
   }
 
@@ -44,12 +45,14 @@ class EventStorage {
     await _writeToFile([]);
   }
 
-  Future<List<TrackEvent>> getCachedEvents() async {
+  Future<Map<String, TrackEvent>> getCachedEvents() async {
     final content = await _secureStorage.read(key: _storageKey) ?? "";
-    if (content.isEmpty) return [];
+    if (content.isEmpty) return {};
     final json = jsonDecode(content);
     if (json is List) {
-      return json.map((e) => TrackEvent.fromJson(e)).toList();
+      final ls = json.map((e) => TrackEvent.fromJson(e)).toList();
+      final entries = ls.map((event) => MapEntry(event.cacheId, event));
+      return Map.fromEntries(entries);
     }
     throw Exception("Malformed data");
   }
