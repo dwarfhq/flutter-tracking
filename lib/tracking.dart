@@ -8,7 +8,7 @@ import 'package:collection/collection.dart';
 
 class Tracker {
   final _mapEq = DeepCollectionEquality();
-  final EventStorage _eventStorage = EventStorage();
+  final EventStorage _eventStorage;
   final PageTimeTracker _pageTimeTracker;
   final TrackingClient _trackingClient;
   final int batchSize;
@@ -24,11 +24,13 @@ class Tracker {
     this.debug = false,
     this.batchSize = 5,
     Json extraData = const <String, dynamic>{},
+    String storageKey = "tracking_events",
     customEventsKey = "events",
   })  : _trackingClient = TrackingClient(
           serviceUrl,
           customEventsKey: customEventsKey,
         ),
+        _eventStorage = EventStorage(storageKey),
         _extraData = extraData,
         _pageTimeTracker = PageTimeTracker();
 

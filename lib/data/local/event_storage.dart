@@ -9,11 +9,11 @@ import '../utils.dart';
 
 class EventStorage {
   final _secureStorage = FlutterSecureStorage();
-  final _storageKey = "tracking_events";
+  final String _storageKey;
   ErrorCallback? _onError;
   bool _mutex = false;
 
-  EventStorage();
+  EventStorage(this._storageKey);
 
   Future<void> init() async {
     final exists = await _secureStorage.containsKey(key: _storageKey);
